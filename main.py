@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 from random import choice, randint, shuffle
 import pyperclip
+import json
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 
@@ -28,17 +29,26 @@ def save():
     website = website_entry.get()
     email = email_entry.get()
     password = password_entry.get()
+    new_data={website:website,email:email,password:password}
 
     if len(website) == 0 or len(password) == 0:
         messagebox.showinfo(title="Oops", message="Please make sure you haven't left any fields empty.")
+
+    try:
+        with open("data.json", "a") as data_file:
+                data=json.load(data_file)
+    except FileNotFoundError as e:
+        with open("data.json","w") as data_file:
+                json.dump(new_data,data_file)
     else:
-        is_ok = messagebox.askokcancel(title=website, message=f"These are the details entered: \nEmail: {email} "
-                                                      f"\nPassword: {password} \nIs it ok to save?")
-        if is_ok:
-            with open("data.txt", "a") as data_file:
-                data_file.write(f"{website} | {email} | {password}\n")
-                website_entry.delete(0, END)
-                password_entry.delete(0, END)
+        json.update(data,new_data)
+        with open("data.json","w") as data_file:
+            json.dump(data,data_file)
+    finally:
+        website_entry.delete(0, END)
+        password_entry.delete(0, END)
+
+# ---------------------------- SEARCH --------------------------------- #
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -71,6 +81,8 @@ password_entry = Entry(width=21)
 password_entry.grid(row=3, column=1)
 
 # Buttons
+search_button=Button(text="Search",command=search)
+search_button.grid(row=1,column=2)
 generate_password_button = Button(text="Generate Password", command=generate_password)
 generate_password_button.grid(row=3, column=2)
 add_button = Button(text="Add", width=36, command=save)
